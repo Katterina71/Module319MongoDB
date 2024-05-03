@@ -1,4 +1,5 @@
 import express from 'express';
+
 import 'dotenv/config';
 import connectToDb from './db/conn.mjs';
 
@@ -12,35 +13,39 @@ import Grades from './models/grades.js';
 
 
 // Find invalid documents.
-app.get("/", async (req, res) => {
-  let grades = Grades.find()
-  res.send(grades).status(200);
+app.get("/", (req, res) => {
+ res.send('Hello! You successfully connect to API!')
 });
 
-
-app.get("/passing", async (req, res) => {
-
-  let result = await Grades.findPassing();
-  res.send(result);
-});
-
-app.get("/:id", async (req, res) => {
-
+app.get('/grades', async (req, res) => {
   try {
-    let result = await Grades.findById(req.params.id);
-    res.send(result);
-  } catch {
-    res.send("Invalid ID").status(400);
+      const result = await Grades.find({});
+      if (result.length > 0) {
+          res.send(result);
+      } else {
+          res.status(404).send({ message: 'No daily grades data found!' });
+      }
+  } catch (err) {
+      console.error('Error retrieving daily health data:', err);
+      next(err); // Properly pass the error to the Express error handler
   }
 });
 
 
-app.get('/grades', (req,res) => {
-  console.log(Grades);
-  res.send('Hello!');
-})
-
-
+app.get('/grades/:id', async (req, res) => {
+  const id = req.params.id
+  try {
+      const result = await Grades.find({_id: id});
+      if (result.length > 0) {
+          res.send(result);
+      } else {
+          res.status(404).send({ message: 'No daily grades data found!' });
+      }
+  } catch (err) {
+      console.error('Error retrieving daily health data:', err);
+      next(err); // Properly pass the error to the Express error handler
+  }
+});
 
 
 // Global error handling
